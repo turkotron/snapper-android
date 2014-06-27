@@ -22,6 +22,13 @@ import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.*;
+import org.apache.http.impl.client.*;
+import org.apache.http.client.methods.*;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.HttpEntity;
+import org.apache.http.entity.mime.content.FileBody;
 
 public class MainActivity extends Activity
 {
@@ -31,12 +38,30 @@ public class MainActivity extends Activity
     public static final int MEDIA_TYPE_IMAGE = 1;
     public static final int MEDIA_TYPE_VIDEO = 2;
 
+    public void upload(String url, File file) throws Exception {
+        HttpClient client = new DefaultHttpClient();
+        HttpPost post = new HttpPost(url);
+
+        HttpEntity entity = MultipartEntityBuilder.create().addPart("image", new FileBody(file)).build();
+        post.setEntity(entity);
+
+        HttpResponse response = client.execute(post);
+    }
+
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+
+        String filePath = "/sdcard/DCIM/.thumbnails/1401918553185.jpg";
+        Log.i("turkotron", filePath);
+        try {
+            upload("http://turkotron.lichess.org/snapper/upload", new File(filePath));
+        } catch(Exception e) {
+            Log.e("turkotron", e.getMessage());
+        }
 
         // Create an instance of Camera
         mCamera = getCameraInstance();
