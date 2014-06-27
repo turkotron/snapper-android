@@ -30,6 +30,8 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.mime.content.FileBody;
 
+import com.googlecode.androidannotations.annotations.*;
+
 public class MainActivity extends Activity
 {
     private static final String TAG = "MainActivity";
@@ -78,11 +80,26 @@ public class MainActivity extends Activity
                     @Override
                     public void onClick(View v) {
                         // get an image from the camera
-                        mCamera.takePicture(null, null, mPicture);
+                        mCamera.takePicture(null, null, null, mPicture);
+                        // waitAndTakePicture();
                     }
                 }
-        );
+                );
     }
+
+    void waitAndTakePicture() {
+        while (true) {
+            try {
+                Thread.sleep(5000);
+                Log.d(TAG, "taking picture...");
+                mCamera.startPreview();
+                mCamera.takePicture(null, null, null, mPicture);
+            } catch (Exception e) {
+                Log.d(TAG, e.getMessage());
+            }
+        }
+    }
+
 
     public void onStart() {
         super.onStart();
@@ -121,6 +138,7 @@ public class MainActivity extends Activity
 
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
+            Log.d(TAG, "onPicture");
 
             File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
             if (pictureFile == null){
@@ -132,11 +150,25 @@ public class MainActivity extends Activity
                 FileOutputStream fos = new FileOutputStream(pictureFile);
                 fos.write(data);
                 fos.close();
+
+                try {
+                    Log.d(TAG, "Upload picture file " + pictureFile.toString());
+                    upload("http://turkotron.lichess.org/snapper/upload", new File(pictureFile.toString()));
+                } catch(Exception e) {
+                    Log.e(TAG, e.getMessage());
+                }
+
+                Log.d(TAG, "taking picture again...");
+                mCamera.startPreview();
+                mCamera.takePicture(null, null, null, mPicture);
+
             } catch (FileNotFoundException e) {
                 Log.d(TAG, "File not found: " + e.getMessage());
             } catch (IOException e) {
                 Log.d(TAG, "Error accessing file: " + e.getMessage());
             }
+
+
         }
     };
 
