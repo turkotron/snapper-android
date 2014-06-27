@@ -1,5 +1,7 @@
 package org.turkotron.snapper;
 
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.app.Activity;
 import android.os.Bundle;
 import android.hardware.Camera;
@@ -9,6 +11,7 @@ import android.widget.FrameLayout;
 import android.view.SurfaceView;
 import android.view.View;
 import android.os.Environment;
+import android.os.Handler;
 
 import java.io.IOException;
 import java.io.File;
@@ -41,9 +44,27 @@ public class MainActivity extends Activity
         mPreview = new CameraPreview(this, mCamera);
         FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
         preview.addView(mPreview);
+    }
 
-        // take picture
-        // mCamera.takePicture(null, null, mPicture);
+    public void onStart() {
+        super.onStart();
+        Log.d(TAG, "Launching Capture");
+        mCamera.takePicture(null, null, mPicture);
+    }
+
+    protected void onPause() {
+        releaseCamera(); // release the camera immediately on pause event
+        super.onPause();
+    }
+
+    protected void onStop() {
+        releaseCamera(); // release the camera immediately on stop event
+        super.onStop();
+    }
+
+    protected void onDestroy() {
+        releaseCamera(); // release the camera immediately on destroy event
+        super.onDestroy();
     }
 
     /** A safe way to get an instance of the Camera object. */
@@ -120,5 +141,24 @@ public class MainActivity extends Activity
         }
 
         return mediaFile;
+    }
+
+    /** Check if this device has a camera */
+    private boolean checkCameraHardware(Context context) {
+        if (context.getPackageManager().hasSystemFeature(
+                    PackageManager.FEATURE_CAMERA)) {
+            // this device has a camera
+            return true;
+        } else {
+            // no camera on this device
+            return false;
+        }
+    }
+
+    private void releaseCamera() {
+        if (mCamera != null) {
+            mCamera.release(); // release the camera for other applications
+            mCamera = null;
+        }
     }
 }
