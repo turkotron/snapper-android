@@ -8,6 +8,7 @@ import android.hardware.Camera;
 import android.util.Log;
 import android.hardware.Camera.PictureCallback;
 import android.widget.FrameLayout;
+import android.widget.Button;
 import android.view.SurfaceView;
 import android.view.View;
 import android.os.Environment;
@@ -44,12 +45,24 @@ public class MainActivity extends Activity
         mPreview = new CameraPreview(this, mCamera);
         FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
         preview.addView(mPreview);
+
+        // Add a listener to the Capture button
+        Button captureButton = (Button) findViewById(R.id.button_capture);
+        captureButton.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // get an image from the camera
+                        mCamera.takePicture(null, null, mPicture);
+                    }
+                }
+        );
     }
 
     public void onStart() {
         super.onStart();
-        Log.d(TAG, "Launching Capture");
-        mCamera.takePicture(null, null, mPicture);
+        // Log.d(TAG, "Launching Capture");
+
     }
 
     protected void onPause() {
